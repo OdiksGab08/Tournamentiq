@@ -1,0 +1,32 @@
+[theme]
+base = "dark"
+primaryColor = "#B94E13"
+backgroundColor = "#100C09"
+secondaryBackgroundColor = "#19110D"
+textColor = "#FFF8F2"
+linkColor = "#F0B967"
+codeTextColor = "#FFF1E6"
+codeBackgroundColor = "#241813"
+borderColor = "#4E362A"
+font = "Manrope:https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+headingFont = "'DM Sans':https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,600;9..40,700;9..40,800&display=swap"
+codeFont = "'IBM Plex Mono':https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+baseFontSize = 15
+baseFontWeight = 400
+headingFontSizes = ["34px", "26px", "20px", "16px", "14px", "12px"]
+headingFontWeights = [800, 700, 700, 650, 650, 600]
+baseRadius = "small"
+buttonRadius = "small"
+showWidgetBorder = true
+showSidebarBorder = true
+linkUnderline = false
+chartCategoricalColors = ["#D46621", "#D69747", "#57B38F", "#A76E4A", "#E3A13B", "#B97863", "#9B887B"]
+chartSequentialColors = ["#2A1C15", "#40281C", "#58321E", "#713C1F", "#8B471E", "#A9531A", "#C15F1A", "#D97829", "#E7A04E", "#F0C47E"]
+
+[theme.sidebar]
+backgroundColor = "#19110D"
+secondaryBackgroundColor = "#241813"
+codeBackgroundColor = "#241813"
+textColor = "#FFF8F2"
+borderColor = "#4E362A"
+primaryColor = "#B94E13"

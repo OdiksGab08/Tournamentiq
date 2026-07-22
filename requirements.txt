@@ -1,0 +1,8 @@
+# Streamlit Community Cloud runtime dependencies
+streamlit>=1.47.0
+numpy
+pandas
+pyarrow
+joblib
+scikit-learn==1.9.0
+plotly

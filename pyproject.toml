@@ -1,0 +1,52 @@
+[project]
+name = "world-cup-predictor"
+version = "0.1.0"
+description = "AI-powered FIFA World Cup 2026 Prediction System using Machine Learning and Monte Carlo Simulation"
+readme = "README.md"
+requires-python = ">=3.12"
+
+authors = [
+    { name = "Gabriel Odika" }
+]
+
+dependencies = [
+    "streamlit>=1.47.0",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "joblib",
+    "scikit-learn==1.9.0",
+    "plotly",
+]
+
+[dependency-groups]
+dev = [
+    "black",
+    "ruff",
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "pre-commit",
+    "ipykernel",
+    "jupyter",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
