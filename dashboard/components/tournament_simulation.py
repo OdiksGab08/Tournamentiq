@@ -18,6 +18,7 @@ Collaboration:
 
 from __future__ import annotations
 
+import traceback
 from html import escape
 import re
 from typing import Any, Mapping, Sequence
@@ -465,13 +466,10 @@ def _run_tournament(seed: int | None, signature: str) -> None:
         st.session_state.tournament_simulation_result = None
         st.session_state.tournament_simulation_signature = signature
         st.session_state.tournament_simulation_error = str(error)
-    except Exception:
-        st.session_state.tournament_simulation_result = None
-        st.session_state.tournament_simulation_signature = signature
-        st.session_state.tournament_simulation_error = (
-            "The tournament simulation could not be completed. Confirm that the trained "
-            "model and engineered team snapshots are available."
-        )
+    except Exception as error:
+        st.error(f"{type(error).__name__}: {error}")
+        st.code(traceback.format_exc())
+        raise
     finally:
         st.session_state.tournament_simulation_running = False
 

@@ -16,13 +16,12 @@ Interactions:
     cached adapters rather than reimplementing model inference.
 """
 
-from pathlib import Path
-
 import joblib
 
+from src.config.deployment import find_project_root, log_artifact
 from src.simulator.feature_builder import FeatureBuilder
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = find_project_root(__file__)
 
 MODEL_DIR = ROOT / "models"
 
@@ -42,11 +41,15 @@ class Predictor:
 
         print("Loading model...")
 
-        self.model = joblib.load(MODEL_DIR / "best_model.pkl")
+        self.model = joblib.load(
+            log_artifact(MODEL_DIR / "best_model.pkl", label="production model")
+        )
 
         print("Loading preprocessor...")
 
-        self.preprocessor = joblib.load(MODEL_DIR / "preprocessor.pkl")
+        self.preprocessor = joblib.load(
+            log_artifact(MODEL_DIR / "preprocessor.pkl", label="preprocessor")
+        )
 
         self.builder = FeatureBuilder()
 

@@ -29,6 +29,7 @@ from uuid import uuid4
 import pandas as pd
 import streamlit as st
 
+from src.config.deployment import find_project_root, log_exception
 from .match_prediction_service import (
     BEST_MODEL_PATH,
     PREPROCESSOR_PATH,
@@ -43,7 +44,7 @@ from .team_comparison_service import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = find_project_root(__file__)
 SNAPSHOT_DATA_PATH = (
     PROJECT_ROOT / "data" / "processed" / "final_training_dataset.parquet"
 )
@@ -144,10 +145,9 @@ def _load_engine_configuration() -> dict[str, Any]:
         from src.simulator.tournament_engine import TournamentEngine
 
         configuration = TournamentEngine.tournament_configuration()
-    except (ImportError, AttributeError) as error:
-        raise TournamentSimulationError(
-            "The tournament engine configuration is unavailable."
-        ) from error
+    except Exception:
+        log_exception("tournament engine configuration load")
+        raise
 
     return {
         **configuration,

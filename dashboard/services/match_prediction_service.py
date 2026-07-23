@@ -26,8 +26,9 @@ from typing import Any, Mapping, Sequence
 import pandas as pd
 import streamlit as st
 
+from src.config.deployment import find_project_root, log_artifact, log_exception
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = find_project_root(__file__)
 MODEL_ROOT = PROJECT_ROOT / "models"
 DATA_ROOT = PROJECT_ROOT / "data"
 BEST_MODEL_PATH = MODEL_ROOT / "best_model.pkl"
@@ -263,19 +264,15 @@ def get_model_metadata() -> dict[str, Any]:
 @st.cache_resource(show_spinner=False)
 def get_predictor() -> Any:
     """Load the existing predictor once per Streamlit process, on demand."""
-    if not BEST_MODEL_PATH.exists() or not PREPROCESSOR_PATH.exists():
-        raise MatchPredictionError(
-            "The trained model or preprocessor file is missing from the models directory."
-        )
-
     try:
+        log_artifact(BEST_MODEL_PATH, label="production model")
+        log_artifact(PREPROCESSOR_PATH, label="preprocessor")
         from src.simulator.predictor import Predictor
 
         return Predictor()
-    except (ImportError, OSError, ValueError) as error:
-        raise MatchPredictionError(
-            "The trained match predictor could not be loaded."
-        ) from error
+    except Exception:
+        log_exception("trained match predictor load")
+        raise
 
 
 def _feature_snapshot(feature_row: Mapping[str, Any]) -> dict[str, Any]:

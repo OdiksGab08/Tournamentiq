@@ -16,6 +16,13 @@ Collaboration:
 
 from __future__ import annotations
 
+try:  # Supports both ``streamlit run dashboard/app.py`` and module imports.
+    from .bootstrap import ensure_project_root
+except ImportError:  # Streamlit executes this entry point as a script.
+    from bootstrap import ensure_project_root
+
+ensure_project_root()
+
 import streamlit as st
 
 from components.layout import apply_global_layout

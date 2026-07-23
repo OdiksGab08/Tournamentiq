@@ -16,11 +16,11 @@ Interactions:
     constructs the exact feature row used by the saved model.
 """
 
-from pathlib import Path
-
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
+from src.config.deployment import find_project_root, log_artifact
+
+ROOT = find_project_root(__file__)
 
 MATCHES = ROOT / "data" / "raw" / "international_results" / "international_results.csv"
 
@@ -39,7 +39,7 @@ class LiveH2H:
     def __init__(self):
 
         self.df = pd.read_csv(
-            MATCHES,
+            log_artifact(MATCHES, label="head-to-head history dataset"),
             parse_dates=["date"],
         )
 

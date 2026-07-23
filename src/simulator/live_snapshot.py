@@ -15,11 +15,11 @@ Interactions:
     ``Predictor`` and dashboard prediction services.
 """
 
-from pathlib import Path
-
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[2]
+from src.config.deployment import find_project_root, log_artifact
+
+ROOT = find_project_root(__file__)
 
 DATA = ROOT / "data" / "processed" / "final_training_dataset.parquet"
 
@@ -37,7 +37,7 @@ class LiveSnapshot:
 
     def __init__(self):
 
-        self.df = pd.read_parquet(DATA)
+        self.df = pd.read_parquet(log_artifact(DATA, label="team snapshot dataset"))
 
     def get_snapshot(self, team: str) -> dict[str, object]:
         """Return the latest available engineered feature values for a team.

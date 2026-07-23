@@ -19,6 +19,7 @@ Collaboration:
 
 from __future__ import annotations
 
+import traceback
 from html import escape
 from typing import Any, Mapping
 
@@ -112,11 +113,10 @@ def run_match_prediction(home_team: str, away_team: str, signature: str) -> None
             status.update(label="Match prediction complete", state="complete")
     except MatchPredictionError as error:
         st.session_state.match_prediction_error = str(error)
-    except Exception:
-        st.session_state.match_prediction_error = (
-            "The trained match predictor could not complete this request. "
-            "Please confirm the model and source datasets are available."
-        )
+    except Exception as error:
+        st.error(f"{type(error).__name__}: {error}")
+        st.code(traceback.format_exc())
+        raise
     finally:
         st.session_state.match_prediction_running = False
 

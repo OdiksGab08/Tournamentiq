@@ -19,6 +19,7 @@ Collaboration:
 
 from __future__ import annotations
 
+import traceback
 from html import escape
 import re
 from typing import Any, Mapping
@@ -500,13 +501,10 @@ def _run_comparison(team_a: str, team_b: str, signature: str) -> None:
         st.session_state.comparison_result = None
         st.session_state.comparison_signature = signature
         st.session_state.comparison_error = str(error)
-    except Exception:
-        st.session_state.comparison_result = None
-        st.session_state.comparison_signature = signature
-        st.session_state.comparison_error = (
-            "The comparison could not be completed. Confirm that the engineered "
-            "snapshot and match-history datasets are available."
-        )
+    except Exception as error:
+        st.error(f"{type(error).__name__}: {error}")
+        st.code(traceback.format_exc())
+        raise
     finally:
         st.session_state.comparison_running = False
 

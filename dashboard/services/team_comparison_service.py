@@ -28,6 +28,7 @@ from typing import Any, Final, Literal
 import pandas as pd
 import streamlit as st
 
+from src.config.deployment import find_project_root, log_artifact, log_exception
 from .match_prediction_service import (
     MatchPredictionError,
     get_available_teams,
@@ -35,7 +36,7 @@ from .match_prediction_service import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = find_project_root(__file__)
 DATA_ROOT = PROJECT_ROOT / "data"
 SNAPSHOT_DATA_PATH = DATA_ROOT / "processed" / "final_training_dataset.parquet"
 HISTORY_DATA_PATH = (
@@ -276,13 +277,13 @@ def _get_live_snapshot_provider(
     if snapshot_modified_at < 0 or not snapshot_path.exists():
         raise TeamComparisonError("The processed team snapshot dataset is unavailable.")
     try:
+        log_artifact(snapshot_path, label="team snapshot dataset")
         from src.simulator.live_snapshot import LiveSnapshot
 
         return LiveSnapshot()
-    except (ImportError, OSError, ValueError) as error:
-        raise TeamComparisonError(
-            "The existing team snapshot provider could not be loaded."
-        ) from error
+    except Exception:
+        log_exception("team snapshot provider load")
+        raise
 
 
 @st.cache_data(show_spinner=False)
@@ -317,6 +318,7 @@ def _load_snapshot_dates(
     if snapshot_modified_at < 0 or not snapshot_path.exists():
         raise TeamComparisonError("The processed team snapshot dataset is unavailable.")
     try:
+        log_artifact(snapshot_path, label="team snapshot dataset")
         frame = pd.read_parquet(
             snapshot_path, columns=["date", "home_team", "away_team"]
         )
@@ -369,6 +371,7 @@ def _read_match_table(path: Path, *, source_label: str) -> tuple[pd.DataFrame, s
         "tournament",
     }
     try:
+        log_artifact(path, label=source_label)
         if path.suffix.casefold() == ".parquet":
             frame = pd.read_parquet(path)
         else:
@@ -745,10 +748,8 @@ def _validated_model_outlook(
     except (MatchPredictionError, TeamComparisonError) as error:
         return None, str(error)
     except Exception:
-        return (
-            None,
-            "The trained match predictor is unavailable for this comparison right now.",
-        )
+        log_exception("team-comparison model outlook")
+        raise
 
 
 def build_team_comparison(

@@ -19,6 +19,7 @@ Collaboration:
 
 from __future__ import annotations
 
+import traceback
 from html import escape
 import re
 from typing import Any, Mapping, Sequence
@@ -415,13 +416,10 @@ def _run_analysis(simulation_count: int, seed: int | None, signature: str) -> No
         st.session_state.monte_carlo_result = None
         st.session_state.monte_carlo_signature = signature
         st.session_state.monte_carlo_error = str(error)
-    except Exception:
-        st.session_state.monte_carlo_result = None
-        st.session_state.monte_carlo_signature = signature
-        st.session_state.monte_carlo_error = (
-            "The Monte Carlo analysis could not be completed. Confirm that the trained "
-            "model, tournament configuration, and team snapshots are available."
-        )
+    except Exception as error:
+        st.error(f"{type(error).__name__}: {error}")
+        st.code(traceback.format_exc())
+        raise
     finally:
         if progress is not None:
             progress.empty()
