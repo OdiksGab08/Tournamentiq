@@ -1,98 +1,261 @@
-# TournamentIQ
+# ⚽ TournamentIQ – AI-Powered FIFA World Cup 2026 Prediction Platform
 
-TournamentIQ is a Streamlit application for exploring historical international football data, estimating match outcome probabilities, comparing teams, and running tournament and Monte Carlo simulations for the 2026 FIFA World Cup.
+<p align="center">
+  <img src="dashboard/assets/images/hero_banner.jpg" alt="TournamentIQ Banner" width="100%">
+</p>
 
-The dashboard is deliberately thin. It presents results from the existing feature-building, prediction, and simulation services; it does not maintain a second set of model logic.
+<p align="center">
 
-## What the application does
+![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)
+![Streamlit](https://img.shields.io/badge/Streamlit-Deployed-red?logo=streamlit)
+![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-orange?logo=scikitlearn)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-- Predicts a home win, draw, or away win for a selected matchup using the persisted production model and preprocessor.
-- Compares teams with the same underlying match-prediction data.
-- Simulates a configured tournament bracket and Monte Carlo tournament outcomes.
-- Explores verified historical match statistics.
-- Surfaces artifact-backed historical coverage metrics on the Home page.
+</p>
 
-## Architecture
+<p align="center">
+
+🚀 **Live Demo:** https://YOUR-STREAMLIT-APP.streamlit.app
+
+</p>
+
+---
+
+# 📖 Overview
+
+TournamentIQ is an end-to-end machine learning application that predicts FIFA World Cup match outcomes using historical international football data.
+
+The platform combines predictive analytics, simulation, and interactive visualizations into a modern web application built with **Python** and **Streamlit**.
+
+It was developed as a portfolio project demonstrating:
+
+- Machine Learning
+- Data Engineering
+- Feature Engineering
+- Predictive Analytics
+- Interactive Dashboard Development
+- Model Deployment
+
+---
+
+# ✨ Features
+
+- ⚽ Match Outcome Prediction
+- 🏆 Knockout Tournament Simulation
+- 🎲 Monte Carlo Championship Simulation
+- 📊 Team Performance Comparison
+- 📈 Historical Football Statistics
+- 🤖 Machine Learning Predictions
+- 📱 Responsive Streamlit Interface
+
+---
+
+# 🖥️ Screenshots
+
+## Home
+
+![Home](screenshots/home.png)
+
+---
+
+## Match Predictor
+
+![Prediction](screenshots/predictor.png)
+
+---
+
+## Team Comparison
+
+![Comparison](screenshots/comparison.png)
+
+---
+
+## Tournament Simulation
+
+![Simulation](screenshots/simulation.png)
+
+---
+
+## Monte Carlo Analysis
+
+![Monte Carlo](screenshots/montecarlo.png)
+
+---
+
+## Statistics Dashboard
+
+![Statistics](screenshots/statistics.png)
+
+---
+
+# 🏗️ System Architecture
 
 ```text
-dashboard/app.py
-  └─ dashboard/navigation.py              Native Streamlit route registry
-      └─ dashboard/views/                 Thin page entry points
-          └─ dashboard/components/        Streamlit presentation components
-              └─ dashboard/services/      Dashboard adapters and state contracts
-                  └─ src/simulator/       Predictor, features, tournament engine
-                      └─ models/          Persisted production model and preprocessor
-
-src/
-  ├─ ingestion/                           Source-data ingestion
-  ├─ data/                                Cleaning, standardization, validation
-  ├─ warehouse/                           Warehouse artifact construction
-  ├─ features/                            Feature engineering
-  ├─ models/                              Training, preprocessing, evaluation
-  ├─ pipelines/                           Pipeline orchestration
-  └─ simulator/                           Match and tournament simulation
+Historical Match Data
+          │
+          ▼
+Data Cleaning & Validation
+          │
+          ▼
+Feature Engineering
+          │
+          ▼
+Model Training
+          │
+          ▼
+Best ML Model
+          │
+          ▼
+Prediction Engine
+          │
+          ▼
+Tournament Simulator
+          │
+          ▼
+Monte Carlo Engine
+          │
+          ▼
+Interactive Streamlit Dashboard
 ```
 
-The active prediction path is:
+---
 
-```text
-Match UI → dashboard.services.match_prediction_service
-         → src.simulator.predictor.Predictor
-         → FeatureBuilder / historical snapshots / H2H features
-         → models/preprocessor.pkl + models/best_model.pkl
+# 📂 Project Structure
+
+```
+TournamentIQ/
+│
+├── dashboard/
+│   ├── app.py
+│   ├── navigation.py
+│   ├── components/
+│   ├── pages/
+│   └── assets/
+│
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── features/
+│
+├── models/
+│
+├── src/
+│
+├── requirements.txt
+│
+└── README.md
 ```
 
-Tournament and Monte Carlo simulations reuse that same prediction layer.
+---
 
-## Requirements
+# 🧠 Machine Learning Pipeline
 
-- Python 3.12 or later
-- The tracked `data/` and `models/` artifacts available locally
-- Dependencies from `pyproject.toml` / `uv.lock`
+The project follows a complete ML workflow:
 
-## Install
+- Data Collection
+- Data Cleaning
+- Feature Engineering
+- Model Training
+- Hyperparameter Tuning
+- Model Evaluation
+- Deployment
 
-```powershell
-uv venv
-.\.venv\Scripts\Activate.ps1
-uv sync --group dev
+Several classification algorithms were evaluated before selecting the production model.
+
+---
+
+# 📊 Dataset
+
+- International Football Results
+- Over **49,000+** historical international matches
+- FIFA World Cup qualifying and international fixtures
+- Engineered football statistics
+
+---
+
+# 🛠️ Technologies Used
+
+### Programming
+
+- Python
+
+### Machine Learning
+
+- Scikit-learn
+- Joblib
+- NumPy
+- Pandas
+
+### Visualization
+
+- Plotly
+- Streamlit
+
+### Development
+
+- Git
+- GitHub
+
+---
+
+# 🚀 Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/tournamentiq.git
 ```
 
-## Run the dashboard
+Navigate into the project
 
-```powershell
-uv run streamlit run dashboard\app.py
+```bash
+cd tournamentiq
 ```
 
-The persisted model is large, so the first real prediction after a process start can take longer than subsequent predictions. The dashboard caches the production predictor for the lifetime of the Streamlit process.
+Install dependencies
 
-## Validate
-
-Run the focused dashboard and simulation contracts:
-
-```powershell
-.\.venv\Scripts\python.exe -m pytest -q -p no:cacheprovider `
-  tests/test_navigation.py `
-  tests/test_match_prediction_service.py `
-  tests/test_tournament_simulation_service.py `
-  tests/test_monte_carlo_service.py `
-  tests/test_statistics_service.py
+```bash
+pip install -r requirements.txt
 ```
 
-Then check source quality:
+Run the application
 
-```powershell
-.\.venv\Scripts\python.exe -m compileall -q dashboard src tests
-.\.venv\Scripts\ruff.exe check dashboard src tests
+```bash
+streamlit run dashboard/app.py
 ```
 
-## Repository conventions
+---
 
-- Do not modify persisted models or datasets while changing the dashboard.
-- Keep prediction calls behind `dashboard.services.match_prediction_service`; its result contract is shared by the predictor, comparison, and simulation experiences.
-- Keep dashboard state in `st.session_state` and shared resources in Streamlit caches.
-- Treat `src/` as the data, ML, and simulation layer; UI work belongs in `dashboard/`.
+# 📌 Future Improvements
 
-## License
+- Live FIFA API Integration
+- Player-level Predictions
+- Group Stage Simulation
+- Cloud Model Optimization
+- Mobile Optimization
 
-MIT. See [LICENSE](LICENSE).
+---
+
+# 👨‍💻 Author
+
+**Gabriel Odika**
+
+Computer Science Graduate
+
+Machine Learning & Full Stack Developer
+
+LinkedIn
+
+https://www.linkedin.com/in/gabriel-odika-57030a371
+
+GitHub
+
+https://github.com/OdiksGab08
+
+---
+
+# ⭐ Support
+
+If you found this project interesting, consider giving it a ⭐ on GitHub.
+
+It really helps and motivates further development.
