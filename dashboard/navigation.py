@@ -18,14 +18,20 @@ Collaboration:
 
 from __future__ import annotations
 
+# Keep navigation groups in a predictable display order.
 from collections import OrderedDict
+# Describe each immutable route with a lightweight data class.
 from dataclasses import dataclass
+# Resolve view-file paths relative to this module rather than the working directory.
 from pathlib import Path
+# Type annotations document the route configuration contract.
 from typing import Any, Final, Mapping
 
+# Import Streamlit's native page and navigation APIs.
 import streamlit as st
 
 
+# Locate the dashboard and its page wrappers from this source file.
 DASHBOARD_ROOT: Final = Path(__file__).resolve().parent
 VIEWS_ROOT: Final = DASHBOARD_ROOT / "views"
 
@@ -54,6 +60,7 @@ class RouteSpec:
     default: bool = False
 
 
+# Define every supported page once so page titles, URLs, groups, and icons stay consistent.
 ROUTES: Final[tuple[RouteSpec, ...]] = (
     RouteSpec(
         name=HOME,
@@ -105,11 +112,13 @@ ROUTES: Final[tuple[RouteSpec, ...]] = (
         url_path="statistics",
     ),
 )
+# Build a fast lookup table for buttons and internal navigation requests.
 ROUTES_BY_NAME: Final[Mapping[str, RouteSpec]] = {route.name: route for route in ROUTES}
 
 
 def ensure_native_navigation_supported() -> None:
     """Fail clearly if this Streamlit runtime lacks the required native APIs."""
+    # Check the three Streamlit APIs used by this navigation implementation.
     missing = [
         name
         for name in ("navigation", "Page", "switch_page")
@@ -139,6 +148,7 @@ def route_groups() -> OrderedDict[str, tuple[RouteSpec, ...]]:
     groups: OrderedDict[str, list[RouteSpec]] = OrderedDict(
         (("", []), ("Predictions", []), ("Simulations", []), ("Analytics", []))
     )
+    # Place each route into its configured top-navigation group.
     for route in ROUTES:
         groups[route.group].append(route)
     return OrderedDict((name, tuple(routes)) for name, routes in groups.items())
@@ -153,6 +163,7 @@ def _make_page(route: RouteSpec) -> Any:
         "url_path": route.url_path,
         "default": route.default,
     }
+    # Some Streamlit versions do not support Material Symbol icon syntax.
     try:
         return st.Page(route.source, icon=route.icon, **page_kwargs)
     except (TypeError, ValueError):

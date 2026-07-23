@@ -15,7 +15,8 @@ Collaboration:
     component and its dedicated service adapter.
 """
 
+# Import the component that presents repeated tournament simulation results.
 from components.monte_carlo_analysis import render_monte_carlo_analysis_page
 
-
+# Render the Monte Carlo analysis workspace.
 render_monte_carlo_analysis_page()

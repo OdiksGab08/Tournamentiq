@@ -19,15 +19,22 @@ Collaboration:
 
 from __future__ import annotations
 
+# Validate that returned probabilities are finite numeric values.
 from math import isfinite
+# Build deployment-safe paths for persisted models and datasets.
 from pathlib import Path
+# Describe UI-safe model and feature payloads.
 from typing import Any, Mapping, Sequence
 
+# Read model metadata and normalize feature data.
 import pandas as pd
+# Cache loaded resources across Streamlit reruns.
 import streamlit as st
 
+# Resolve production artifacts and print useful Cloud diagnostics before loading.
 from src.config.deployment import find_project_root, log_artifact, log_exception
 
+# Define all persisted artifacts from the discovered repository root.
 PROJECT_ROOT = find_project_root(__file__)
 MODEL_ROOT = PROJECT_ROOT / "models"
 DATA_ROOT = PROJECT_ROOT / "data"
@@ -39,6 +46,7 @@ SNAPSHOT_DATA_PATH = DATA_ROOT / "processed" / "final_training_dataset.parquet"
 TEAM_RATINGS_PATH = DATA_ROOT / "simulator" / "team_ratings.parquet"
 
 # Verified against src.models.prepare_data.create_target and model.classes_.
+# Map the trained classifier's numeric labels to UI-facing outcome names.
 CLASS_TO_OUTCOME = {
     0: "home_win",
     1: "draw",
@@ -51,6 +59,7 @@ class MatchPredictionError(ValueError):
 
 
 def _path_signature(path: Path) -> tuple[str, int]:
+    # File timestamps make cached values refresh after an artifact changes.
     try:
         return str(path), path.stat().st_mtime_ns
     except OSError:
@@ -155,6 +164,7 @@ def _normalize_team_names(values: pd.Series) -> list[str]:
     return sorted(normalized.drop_duplicates().tolist(), key=str.casefold)
 
 
+# Cache selector data because team names come from immutable local artifacts.
 @st.cache_data(show_spinner=False)
 def _load_team_names(
     ratings_path_string: str,
@@ -261,16 +271,19 @@ def get_model_metadata() -> dict[str, Any]:
     )
 
 
+# Cache the large model resource once per Streamlit process to avoid reloads.
 @st.cache_resource(show_spinner=False)
 def get_predictor() -> Any:
     """Load the existing predictor once per Streamlit process, on demand."""
     try:
+        # Confirm the Git-LFS model and matching preprocessor exist before deserialization.
         log_artifact(BEST_MODEL_PATH, label="production model")
         log_artifact(PREPROCESSOR_PATH, label="preprocessor")
         from src.simulator.predictor import Predictor
 
         return Predictor()
     except Exception:
+        # Preserve the original exception and full traceback in deployment logs.
         log_exception("trained match predictor load")
         raise
 
@@ -319,11 +332,13 @@ def predict_match(home_team: str, away_team: str) -> dict[str, Any]:
     three-class ``predict_proba`` output required by the Match Predictor UI.
     """
     home, away = validate_matchup(home_team, away_team)
+    # Reuse the cached trained model, preprocessor, and feature builder.
     predictor = get_predictor()
 
     try:
         features = predictor.builder.build(home, away)
         transformed = predictor.preprocessor.transform(features)
+        # Retain the model's unmodified three-outcome probability distribution.
         raw_probabilities = predictor.model.predict_proba(transformed)[0]
         classes = getattr(predictor.model, "classes_", None)
         if classes is None:

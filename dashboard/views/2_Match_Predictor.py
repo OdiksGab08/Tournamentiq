@@ -16,7 +16,8 @@ Collaboration:
     prediction state, validation, and trained-model interaction.
 """
 
+# Import the model-backed Match Predictor renderer for this route.
 from components.match_predictor import render_match_predictor_page
 
-
+# Render the selected prediction workspace.
 render_match_predictor_page()

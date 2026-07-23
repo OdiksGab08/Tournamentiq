@@ -15,10 +15,13 @@ Interactions:
     ``Predictor`` and dashboard prediction services.
 """
 
+# Load and filter the engineered historical feature table.
 import pandas as pd
 
+# Resolve and diagnose the persisted snapshot artifact before reading it.
 from src.config.deployment import find_project_root, log_artifact
 
+# Build the absolute input path so prediction does not depend on CWD.
 ROOT = find_project_root(__file__)
 
 DATA = ROOT / "data" / "processed" / "final_training_dataset.parquet"
@@ -37,6 +40,7 @@ class LiveSnapshot:
 
     def __init__(self):
 
+        # Load the persisted snapshot once for efficient repeated team lookups.
         self.df = pd.read_parquet(log_artifact(DATA, label="team snapshot dataset"))
 
     def get_snapshot(self, team: str) -> dict[str, object]:
@@ -57,6 +61,7 @@ class LiveSnapshot:
             selects the newest row first and then reads fields using its prefix.
         """
 
+        # A team can appear in either orientation, so collect and date-sort both views.
         home = self.df[self.df.home_team == team].sort_values("date")
 
         away = self.df[self.df.away_team == team].sort_values("date")
@@ -87,6 +92,7 @@ class LiveSnapshot:
 
         snapshot["team"] = team
 
+        # These feature suffixes match the data-engineering schema used during training.
         columns = [
             "matches_played",
             "wins",
@@ -118,6 +124,7 @@ class LiveSnapshot:
             "competition_matches",
         ]
 
+        # Copy the latest side-specific values into a team-neutral snapshot dictionary.
         for col in columns:
             snapshot[col] = latest[f"{prefix}_{col}"]
 

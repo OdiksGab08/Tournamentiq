@@ -19,12 +19,17 @@ Collaboration:
 
 from __future__ import annotations
 
+# Accept feature and history collections without changing their source data.
 from collections.abc import Iterable, Mapping
+# Define structured presentation metadata for each feature.
 from dataclasses import dataclass
+# Validate comparison values before calculating normalized scores.
 from math import isfinite
+# Resolve project data paths independent of Streamlit's working directory.
 from pathlib import Path
 from typing import Any, Final, Literal
 
+# Load tabular snapshots and cache comparison data between reruns.
 import pandas as pd
 import streamlit as st
 
@@ -36,6 +41,7 @@ from .match_prediction_service import (
 )
 
 
+# Derive every comparison source file from the repository root.
 PROJECT_ROOT = find_project_root(__file__)
 DATA_ROOT = PROJECT_ROOT / "data"
 SNAPSHOT_DATA_PATH = DATA_ROOT / "processed" / "final_training_dataset.parquet"
@@ -66,6 +72,7 @@ class FeatureMetadata:
 
 # This is the single source of truth for labels, formatting, favourable
 # direction, metric cards, strength bars, radar normalization, and verdicts.
+# Keep display labels, score direction, and chart inclusion rules in one source of truth.
 FEATURE_CONFIG: Final[dict[str, FeatureMetadata]] = {
     "form_win_rate": FeatureMetadata(
         label="Recent Form Win Rate",
@@ -268,6 +275,7 @@ def _favorable_side(
     return "team_a" if score_a > score_b else "team_b"
 
 
+# Cache the full snapshot provider because it holds a large parquet table in memory.
 @st.cache_resource(show_spinner=False)
 def _get_live_snapshot_provider(
     snapshot_path_string: str, snapshot_modified_at: int
@@ -282,16 +290,19 @@ def _get_live_snapshot_provider(
 
         return LiveSnapshot()
     except Exception:
+        # Log and re-raise the real failure so Cloud diagnostics are not hidden.
         log_exception("team snapshot provider load")
         raise
 
 
+# Cache the small date-only table separately from the full snapshot provider.
 @st.cache_data(show_spinner=False)
 def _load_team_snapshot(
     team: str, snapshot_path_string: str, snapshot_modified_at: int
 ) -> dict[str, Any]:
     """Retrieve one exact backend-engineered snapshot in a UI-safe form."""
     provider = _get_live_snapshot_provider(snapshot_path_string, snapshot_modified_at)
+    # Read either a parquet fallback or CSV history using the source file extension.
     try:
         snapshot = provider.get_snapshot(team)
     except (KeyError, TypeError, ValueError) as error:

@@ -16,7 +16,8 @@ Collaboration:
     validated simulation service.
 """
 
+# Import the component that visualizes one real model-backed tournament bracket.
 from components.tournament_simulation import render_tournament_simulation_page
 
-
+# Render the Tournament Simulation page selected by Streamlit.
 render_tournament_simulation_page()

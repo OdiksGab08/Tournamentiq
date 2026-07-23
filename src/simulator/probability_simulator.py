@@ -15,6 +15,7 @@ Interactions:
     evaluates each fixture.
 """
 
+# Use Python's pseudo-random generator to sample a winner from model probabilities.
 import random
 
 
@@ -43,6 +44,7 @@ class ProbabilitySimulator:
             non-deterministic simulation runs.
         """
 
+        # Seed only when requested so users can reproduce a simulation path.
         if seed is not None:
             random.seed(seed)
 
@@ -70,6 +72,7 @@ class ProbabilitySimulator:
             of fabricating a deterministic winner.
         """
 
+        # Normalize the two weights before comparing them with one random draw.
         total = home_probability + away_probability
 
         # Preserve a valid simulation path for malformed zero-weight inputs
@@ -85,6 +88,7 @@ class ProbabilitySimulator:
         home_probability /= total
         away_probability /= total
 
+        # Draw a uniform value in [0, 1) to select one advancing team.
         random_number = random.random()
 
         if random_number < home_probability:

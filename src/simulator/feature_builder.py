@@ -16,9 +16,12 @@ Interactions:
     its field names must remain compatible with the training pipeline.
 """
 
+# Use pandas to return the one-row feature table expected by the preprocessor.
 import pandas as pd
 
+# Read latest engineered team values from the persisted snapshot dataset.
 from src.simulator.live_snapshot import LiveSnapshot
+# Calculate matchup-specific historical head-to-head values.
 from src.features.h2h_live import LiveH2H
 
 
@@ -35,6 +38,7 @@ class FeatureBuilder:
 
     def __init__(self):
 
+        # Create reusable data providers so every prediction does not reread source files.
         self.snapshot = LiveSnapshot()
         self.h2h = LiveH2H()
 
@@ -55,11 +59,13 @@ class FeatureBuilder:
             home and away columns.
         """
 
+        # Retrieve the latest engineered values for both selected teams.
         home = self.snapshot.get_snapshot(home_team)
         away = self.snapshot.get_snapshot(away_team)
 
         h2h = self.h2h.get_stats(home_team, away_team)
 
+        # Assemble raw fields in the exact schema expected by the saved pipeline.
         row = {}
 
         # -------------------------------------------------
@@ -75,6 +81,7 @@ class FeatureBuilder:
         # Copy every Home Feature
         # -------------------------------------------------
 
+        # Prefix values to preserve each team's model feature orientation.
         for key, value in home.items():
             if key == "team":
                 continue
@@ -95,6 +102,7 @@ class FeatureBuilder:
         # Head-to-Head
         # -------------------------------------------------
 
+        # Add shared matchup history fields after team-specific fields are present.
         row.update(h2h)
 
         # -------------------------------------------------
@@ -120,4 +128,5 @@ class FeatureBuilder:
 
         row["defense_difference"] = home["defense_strength"] - away["defense_strength"]
 
+        # Return one record because the classifier predicts one requested fixture at a time.
         return pd.DataFrame([row])

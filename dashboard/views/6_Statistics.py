@@ -16,7 +16,8 @@ Collaboration:
     all filtering, validation, and metric production.
 """
 
+# Import the historical-statistics renderer for the Analytics route.
 from components.statistics_dashboard import render_statistics_dashboard
 
-
+# Render the selected Statistics page.
 render_statistics_dashboard()

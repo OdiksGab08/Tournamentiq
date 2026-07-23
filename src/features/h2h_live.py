@@ -16,8 +16,10 @@ Interactions:
     constructs the exact feature row used by the saved model.
 """
 
+# Use pandas to load and filter historical match records.
 import pandas as pd
 
+# Reuse project-root discovery and deploy-time file diagnostics.
 from src.config.deployment import find_project_root, log_artifact
 
 ROOT = find_project_root(__file__)
@@ -38,6 +40,7 @@ class LiveH2H:
 
     def __init__(self):
 
+        # Load the source history once and parse match dates for later comparisons.
         self.df = pd.read_csv(
             log_artifact(MATCHES, label="head-to-head history dataset"),
             parse_dates=["date"],
@@ -58,6 +61,7 @@ class LiveH2H:
             match still contributes correctly to the caller's requested view.
         """
 
+        # Keep meetings in either historical home/away orientation.
         matches = self.df[
             ((self.df.home_team == home_team) & (self.df.away_team == away_team))
             | ((self.df.home_team == away_team) & (self.df.away_team == home_team))
@@ -84,6 +88,8 @@ class LiveH2H:
         home_goals = 0
         away_goals = 0
 
+        # Reorient every historical match so returned values always describe
+        # the caller's requested home team first.
         for _, row in matches.iterrows():
             if row.home_team == home_team:
                 hg = row.home_score

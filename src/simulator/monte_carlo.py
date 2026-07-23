@@ -19,15 +19,21 @@ Interactions:
 
 from __future__ import annotations
 
+# Count how often each team reaches a stage or wins the tournament.
 from collections import Counter
+# Type the optional progress callback and checkpoint iterable.
 from collections.abc import Callable, Iterable
+# Describe flexible dashboard and engine result values.
 from typing import Any
 
+# Build tabular champion-frequency results for existing consumers.
 import pandas as pd
 
+# Reuse the same real tournament engine for each Monte Carlo iteration.
 from src.simulator.tournament_engine import TournamentEngine
 
 
+# A callback receives completed simulations and the requested total for UI progress.
 ProgressCallback = Callable[[int, int], None]
 
 
@@ -70,6 +76,7 @@ class MonteCarloSimulator:
             Optional predictor and seed inputs preserve established callers while
             allowing dashboard services to avoid repetitive model loading.
         """
+        # Reject booleans explicitly because ``bool`` is a subclass of ``int`` in Python.
         if isinstance(simulations, bool):
             raise ValueError("simulations must be a positive integer")
         try:
@@ -80,6 +87,8 @@ class MonteCarloSimulator:
             raise ValueError("simulations must be a positive integer")
 
         self.seed = seed
+        # Reuse a supplied engine when available; otherwise create one with the
+        # existing predictor and random-seed behavior.
         self.engine = (
             engine
             if engine is not None
@@ -100,6 +109,7 @@ class MonteCarloSimulator:
             This contract is intentionally preserved for existing callers that
             consume a compact champion-only result instead of detailed stages.
         """
+        # Store one title count for each simulated tournament winner.
         champions: Counter[str] = Counter()
 
         print()
@@ -107,6 +117,7 @@ class MonteCarloSimulator:
         print("RUNNING MONTE CARLO SIMULATION")
         print("=" * 70)
 
+        # Execute the configured number of full tournament brackets.
         for index in range(self.simulations):
             champion = self.engine.simulate()
             champions[champion] += 1
@@ -114,6 +125,7 @@ class MonteCarloSimulator:
             if (index + 1) % 100 == 0:
                 print(f"{index + 1}/{self.simulations} completed")
 
+        # Convert counts into the legacy table and calculate empirical title percentages.
         result = pd.DataFrame(champions.items(), columns=["Team", "Titles"])
         result["Probability"] = result["Titles"] / self.simulations * 100
         return result.sort_values("Probability", ascending=False)
@@ -140,6 +152,7 @@ class MonteCarloSimulator:
             Checkpoints are snapshots from one cumulative run, not independent
             reruns; the legacy :meth:`run` output remains unchanged.
         """
+        # Validate optional progress checkpoints before running potentially expensive work.
         checkpoint_set = self._validate_checkpoints(checkpoints)
         configuration = self.engine.tournament_configuration()
         teams = [str(team) for team in configuration["teams"]]
@@ -154,6 +167,7 @@ class MonteCarloSimulator:
         }
         convergence: list[dict[str, Any]] = []
 
+        # Run the same detailed bracket repeatedly and aggregate real outcomes.
         for index in range(self.simulations):
             tournament = self.engine.simulate_detailed()
             self._validate_detailed_tournament(

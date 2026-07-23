@@ -19,12 +19,16 @@ Interactions:
 
 from __future__ import annotations
 
+# Type model-backed match records and ordered fixture collections.
 from typing import Any, Sequence
 
+# Load the trained predictor only when an engine is created without one.
 from src.simulator.predictor import Predictor
+# Sample one knockout winner from model-derived probabilities.
 from src.simulator.probability_simulator import ProbabilitySimulator
 
 
+# Define the fixed supported opening bracket in display and simulation order.
 DEFAULT_QUARTER_FINALS: tuple[tuple[str, str], ...] = (
     ("France", "Morocco"),
     ("Spain", "Belgium"),
@@ -70,6 +74,7 @@ class TournamentEngine:
             Reusing a cached predictor keeps dashboard and Monte Carlo runs from
             loading the saved model for each engine or fixture.
         """
+        # Reuse a cached predictor when provided so repeated simulations do not reload Git-LFS artifacts.
         self.predictor = predictor if predictor is not None else Predictor()
         self.seed = seed
         self.simulator = (
@@ -95,6 +100,7 @@ class TournamentEngine:
             This is the source of truth for supported teams and prevents UI
             layers from claiming a broader fixture configuration than the engine.
         """
+        # Return plain serializable configuration so dashboard services can validate it safely.
         return {
             "tournament_name": cls.TOURNAMENT_NAME,
             "format": cls.FORMAT_NAME,
@@ -110,6 +116,7 @@ class TournamentEngine:
     def _simulate_match(self, home: str, away: str) -> dict[str, Any]:
         """Use the existing predictor and probability simulator for one fixture."""
         cache_key = (home.casefold(), away.casefold())
+        # Cache immutable fixture probabilities within this engine instance.
         if cache_key not in self._match_prediction_cache:
             self._match_prediction_cache[cache_key] = dict(
                 self.predictor.predict(home, away)
@@ -117,6 +124,7 @@ class TournamentEngine:
         prediction = self._match_prediction_cache[cache_key]
         home_probability = float(prediction["home_probability"])
         away_probability = float(prediction["away_probability"])
+        # Use the existing draw-adjusted binary probabilities to sample advancement.
         winner = self.simulator.choose(
             home,
             away,

@@ -15,7 +15,8 @@ Collaboration:
     by the shared Home component and its services.
 """
 
+# Import the shared Home renderer; this thin route wrapper contains no page logic.
 from components.home import render_home_page
 
-
+# Render the Home page selected by native Streamlit navigation.
 render_home_page()

@@ -19,6 +19,7 @@ Collaboration:
 
 from __future__ import annotations
 
+# Timestamp a completed analysis in a portable UTC representation.
 from datetime import datetime, timezone
 import json
 from math import isfinite, sqrt
@@ -26,6 +27,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 from uuid import uuid4
 
+# Build exportable tables from validated simulation results.
 import pandas as pd
 
 from .match_prediction_service import (
@@ -44,6 +46,7 @@ from .tournament_simulation_service import (
 )
 
 
+# Limit interactive work to tested run sizes that keep the UI responsive.
 SUPPORTED_SIMULATION_COUNTS: tuple[int, ...] = (100, 250, 500, 1000)
 WILSON_Z_95 = 1.959963984540054
 ProgressCallback = Callable[[int, int], None]
@@ -54,6 +57,7 @@ class MonteCarloAnalysisError(ValueError):
 
 
 def _path_version(path: Path) -> int:
+    # Reuse the tournament service's parser so both pages accept the same seed values.
     try:
         return path.stat().st_mtime_ns
     except OSError:
@@ -712,6 +716,7 @@ def run_monte_carlo_analysis(
     """Run the existing detailed MonteCarloSimulator without caching the result."""
     count = validate_simulation_count(simulation_count)
     parsed_seed = parse_monte_carlo_seed(seed)
+    # Confirm model files, snapshots, and the fixed bracket before expensive iterations start.
     preflight = validate_monte_carlo_preflight(count)
     configuration = preflight["configuration"]
     teams = preflight["teams"]
@@ -720,6 +725,7 @@ def run_monte_carlo_analysis(
         from src.simulator.monte_carlo import MonteCarloSimulator
 
         predictor = get_predictor()
+        # Reuse the cached predictor while the simulator executes repeated real brackets.
         simulator = MonteCarloSimulator(
             simulations=count, predictor=predictor, seed=parsed_seed
         )

@@ -14,7 +14,8 @@ Collaboration:
     and all comparison calculations.
 """
 
+# Import the shared comparison renderer so calculations stay outside the route wrapper.
 from components.team_comparison import render_team_comparison_page
 
-
+# Render the Team Comparison page chosen in navigation.
 render_team_comparison_page()

@@ -16,15 +16,20 @@ Collaboration:
 
 from __future__ import annotations
 
+# Import the bootstrap from the appropriate location whether Streamlit runs this
+# file directly or Python imports it as part of the dashboard package.
 try:  # Supports both ``streamlit run dashboard/app.py`` and module imports.
     from .bootstrap import ensure_project_root
 except ImportError:  # Streamlit executes this entry point as a script.
     from bootstrap import ensure_project_root
 
+# Make the repository root importable before services import the top-level ``src`` package.
 ensure_project_root()
 
+# Import Streamlit to configure and render the web application.
 import streamlit as st
 
+# Import the shared page styling and the central native-navigation helpers.
 from components.layout import apply_global_layout
 from navigation import (
     NavigationError,
@@ -33,6 +38,7 @@ from navigation import (
 )
 
 
+# Configure browser metadata and the wide, top-navigation application layout once.
 st.set_page_config(
     page_title="TournamentIQ | Football Analytics",
     page_icon="⚽",
@@ -44,8 +50,11 @@ st.set_page_config(
 # Page-specific prediction and filter state remains untouched.
 st.session_state.pop("page", None)
 
+# Apply the shared visual layout before the selected page writes any UI elements.
 apply_global_layout()
 
+# Build and execute the selected page; show a friendly error if this Streamlit
+# installation lacks the navigation APIs required by TournamentIQ.
 try:
     ensure_native_navigation_supported()
 

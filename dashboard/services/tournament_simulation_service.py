@@ -19,6 +19,7 @@ Collaboration:
 
 from __future__ import annotations
 
+# Timestamp completed simulations in a timezone-aware, export-safe format.
 from datetime import datetime, timezone
 from math import isfinite, log2
 from pathlib import Path
@@ -26,6 +27,7 @@ import re
 from typing import Any, Mapping, Sequence
 from uuid import uuid4
 
+# Build result tables and cache static tournament configuration across reruns.
 import pandas as pd
 import streamlit as st
 
@@ -44,6 +46,7 @@ from .team_comparison_service import (
 )
 
 
+# Resolve required snapshot data from the project root rather than CWD.
 PROJECT_ROOT = find_project_root(__file__)
 SNAPSHOT_DATA_PATH = (
     PROJECT_ROOT / "data" / "processed" / "final_training_dataset.parquet"
@@ -138,14 +141,17 @@ def parse_simulation_seed(value: str | int | None) -> int | None:
     raise TournamentSimulationError("The optional simulation seed must be an integer.")
 
 
+# The fixed tournament field has no user-specific state, so cache it safely.
 @st.cache_data(show_spinner=False)
 def _load_engine_configuration() -> dict[str, Any]:
     """Read the active fixed tournament field directly from TournamentEngine."""
+    # Import lazily so page metadata can load without constructing the large model.
     try:
         from src.simulator.tournament_engine import TournamentEngine
 
         configuration = TournamentEngine.tournament_configuration()
     except Exception:
+        # Keep the complete underlying traceback in local and Community Cloud logs.
         log_exception("tournament engine configuration load")
         raise
 
@@ -247,6 +253,7 @@ def get_tournament_overview() -> dict[str, Any]:
     teams = validate_tournament_configuration(configuration)
     snapshot_dates: dict[str, str | None] = {}
     warnings: list[str] = []
+    # Validate every configured team has the real engineered snapshot needed for prediction.
     for team in teams:
         try:
             snapshot_dates[team] = get_latest_snapshot_date(team)

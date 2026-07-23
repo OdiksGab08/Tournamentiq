@@ -16,11 +16,15 @@ Interactions:
     cached adapters rather than reimplementing model inference.
 """
 
+# Load the serialized scikit-learn estimator and preprocessing pipeline.
 import joblib
 
+# Reuse deployment-safe path resolution and artifact logging for local and Cloud runs.
 from src.config.deployment import find_project_root, log_artifact
+# Build the exact feature columns expected by the saved preprocessor.
 from src.simulator.feature_builder import FeatureBuilder
 
+# Resolve the repository root and production-model directory independently of CWD.
 ROOT = find_project_root(__file__)
 
 MODEL_DIR = ROOT / "models"
@@ -39,18 +43,21 @@ class Predictor:
 
     def __init__(self):
 
+        # Log model loading so deployment logs reveal which Git-LFS artifact is used.
         print("Loading model...")
 
         self.model = joblib.load(
             log_artifact(MODEL_DIR / "best_model.pkl", label="production model")
         )
 
+        # Load the matching transformer after the estimator so raw features use training schema.
         print("Loading preprocessor...")
 
         self.preprocessor = joblib.load(
             log_artifact(MODEL_DIR / "preprocessor.pkl", label="preprocessor")
         )
 
+        # Create one reusable feature builder for all predictions made by this predictor.
         self.builder = FeatureBuilder()
 
         print("Predictor Ready.")
@@ -77,13 +84,16 @@ class Predictor:
             probability simulator needs a binary winner distribution.
         """
 
+        # Build the one-row raw feature table for the selected teams.
         features = self.builder.build(
             home_team,
             away_team,
         )
 
+        # Apply the saved training transformations before calling the classifier.
         X = self.preprocessor.transform(features)
 
+        # Request the model's three-class home/draw/away probability vector.
         probabilities = self.model.predict_proba(X)[0]
 
         home_probability = float(probabilities[0])
